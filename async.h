@@ -82,11 +82,15 @@ _handle_spawn_async (uv_process_t *req, int64_t rc, int sig);
 
 void
 aspawn (async_env_t *env, char *args[], void (*fn)(async_work_data_t *work)) {
-  int argc = 0;
-  char *a = args[argc++];
-  while (a != NULL) {
-    argc++;
-    a = args[argc];
+  int argc = -1;
+  char *a = args[++argc];
+  while (1) {
+    a = args[argc +1];
+    if (a != NULL) {
+      argc++;
+    } else {
+      break;
+    }
   }
 
   _spawn_async(env, argc, args, fn);
