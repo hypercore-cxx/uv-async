@@ -14,6 +14,7 @@ static async_env_t *envs[4] = { };
 
 static int loop_count = 0;
 static int env_count = 0;
+static int interval_count = 0;
 
 
 static void
@@ -42,6 +43,9 @@ spawn_job (async_work_data_t *data);
 
 static void
 pass_test (async_work_data_t *data);
+
+static void
+on_interval (async_work_data_t *data);
 
 int
 main (void) {
@@ -88,6 +92,9 @@ main (void) {
 
     printf("queue job1 in env (b)\n");
     queue(env_b, job1);
+
+		printf("starting interval in env (b)\n");
+		interval(env_b, 300, on_interval);
   }
 
   async(env_c, loop) {
@@ -190,4 +197,14 @@ pass_test (async_work_data_t *data) {
   assert(1 == jobs[2]);
   assert(1 == jobs[3]);
 //  uv_stop(loop);
+}
+	
+static void
+on_interval (async_work_data_t *data) {
+	if (++interval_count > 10) {
+		printf("interval limit reached. Stopping.. \n");
+		data->rc = 1;
+	} else {
+		printf("interval #%d\n", interval_count);
+	}
 }

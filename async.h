@@ -36,11 +36,16 @@
   async_work_init(env, fn, ms, ASYNC_DEFER);               \
 }
 
+#define interval(env, ms, fn) {                            \
+  async_work_init(env, fn, ms, ASYNC_INTERVAL);            \
+}
+
 #define MAX_ASYNC_STDIO 8
 
 // FLAGS
 
 #define ASYNC_DEFER 0x1
+#define ASYNC_INTERVAL 0x2
 
 struct async_work_data;
 
@@ -55,6 +60,7 @@ typedef struct async_work_data {
   async_env_t *env;
   void (*cb)(struct async_work_data *data);
   void *data;
+	int rc;
   int flags;
   int err;
 } async_work_data_t;
@@ -104,7 +110,16 @@ _handle_async (uv_work_t *work) {
 
   if (ASYNC_DEFER == (ASYNC_DEFER & data->flags)) {
     us = ((int) data->data) * 1000;
-  }
+  } 
+	
+	if (ASYNC_INTERVAL == (ASYNC_INTERVAL & data->flags)) {
+    us = ((int) data->data) * 1000;
+		while (1 != data->rc) {
+			usleep(us);
+			data->cb(data);
+		}
+		return;
+	}
 
   usleep(us);
   data->cb(data);
