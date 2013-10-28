@@ -64,9 +64,12 @@ typedef struct async_env {
 
 typedef struct async_work_data {
   async_env_t *env;
+	uv_process_t *process;
   void (*cb)(struct async_work_data *data);
   void *data;
+	void *extra;
   int rc;
+	int signal;
   int flags;
   int err;
 } async_work_data_t;
@@ -147,14 +150,16 @@ _spawn_async (async_env_t *env, int argc, char *args[], void (*fn)(async_work_da
   opts->file = args[0];
   opts->flags = 0;
 
+	data->extra = (void *) opts;
+
   if (NULL != env->stdio) {
-    opts.stdio = env->stdio;
+    opts->stdio = env->stdio;
 
     for (; i < MAX_ASYNC_STDIO; ++i) {
       if (NULL != env->stdio[i].data.stream) n++;
     }
 
-    opts.stdio_count = n;
+    opts->stdio_count = n;
   }
 
   data->env = env;
@@ -174,6 +179,9 @@ static void
 _handle_spawn_async (uv_process_t *process, int64_t rc, int sig) {
   async_work_data_t *work = (async_work_data_t *) process->data;
   async_cb *cb = (async_cb *) work->cb;
+	work->process = process;
+	work->signal = sig;
+	work->rc = rc;
   if (NULL != work->cb) {
     cb(work);
   }

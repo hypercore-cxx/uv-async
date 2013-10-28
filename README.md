@@ -5,7 +5,7 @@ Asynchronous goodies built on libuv
 
 # install
 
-```c
+```sh
 $ clib install jwerle/async.h
 ```
 
@@ -74,6 +74,43 @@ on_interval (async_work_data_t  *work) {
 	} else {
 		printf("interval #%d\n", interval_count);
 	}
+}
+```
+
+## spawn
+
+You can spawn a system command with the `spawn(env, cmd, fn)` macro. The
+`fn` will be called when the command has returned. The return code and
+signal code are attached to the `async_work_data_t *` pointer provided
+to the callback `fn`.
+
+```c
+#include "async.h"
+#include <assert.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/stat.h>
+
+staic void
+on_spawn (async_work_data_t *work) {
+	assert(0 == work->rc);
+	assert(0 == work->signal);
+	assert(work->process);
+
+	struct stat s;
+	assert(0 == stat("./foo", &s));
+	assert(0 == stat("./foo/bar", &s));
+	assert(0 == stat("./foo/bar/biz", &s));
+}
+
+int
+main (void) {
+	async(env, uv_default_loop()) {
+		char *cmd[] = { "mkdir", "-p", "./foo/bar/biz" };
+		spawn(env, cmd, on_spawn);
+	}
+
+	return uv_run(uv_default_loop(), UV_RUN_DEFAULT);
 }
 ```
 

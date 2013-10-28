@@ -171,11 +171,29 @@ job4 (async_work_data_t *data) {
 
 static void
 spawn_job (async_work_data_t *data) {
-  detail_job("spawn", data);
+	uv_process_options_t *opts = (uv_process_options_t *)data->extra;
   struct stat s;
-  assert(0 == stat("./tmp", &s));
-  assert(0 == stat("./tmp/test", &s));
-  assert(0 == stat("./tmp/test/dir", &s));
+
+  detail_job("spawn", data);
+	printf("- (spawn) rc = '%d'\n", data->rc);
+	printf("- (spawn) signal = '%d'\n", data->signal);
+
+	assert(0 == data->rc);
+	assert(0 == data->signal);
+	assert(data->process);
+
+	if (0 == strcmp("mkdir", opts->file)) {
+	  assert(0 == stat("./tmp", &s));
+	  assert(0 == stat("./tmp/test", &s));
+	  assert(0 == stat("./tmp/test/dir", &s));
+
+		async(env, loop) {
+			char *cmd[] = { "rm", "-rf", "./tmp" };
+	    spawn(env, cmd, spawn_job);
+		}
+	} else if (0 == strcmp("rm", opts->file)) {
+	  assert(-1 == stat("./tmp", &s));
+	}
 }
 
 static void
