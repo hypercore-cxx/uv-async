@@ -107,11 +107,11 @@ main (void) {
   }
 
   async(env_d, loop) {
-    assert(env_c);
+    assert(env_d);
     assert(loop);
-    assert(NULL == env_c->handle);
-    assert(env_c->loop);
-    assert(env_c->flags);
+    assert(NULL == env_d->handle);
+    assert(env_d->loop);
+    assert(env_d->flags);
 
     envs[env_count++] = env_d;
 
