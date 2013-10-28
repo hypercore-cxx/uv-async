@@ -93,8 +93,8 @@ main (void) {
     printf("queue job1 in env (b)\n");
     queue(env_b, job1);
 
-		printf("starting interval in env (b)\n");
-		interval(env_b, 300, on_interval);
+    printf("starting interval in env (b)\n");
+    interval(env_b, 300, on_interval);
   }
 
   async(env_c, loop) {
@@ -110,7 +110,7 @@ main (void) {
     envs[env_count++] = env_c;
 
     char *cmd[] = { "mkdir", "-p", "./tmp/test/dir" };
-    aspawn(env_c, cmd, spawn_job);
+    spawn(env_c, cmd, spawn_job);
   }
 
   async(env_d, loop) {
@@ -198,13 +198,13 @@ pass_test (async_work_data_t *data) {
   assert(1 == jobs[3]);
 //  uv_stop(loop);
 }
-	
+  
 static void
 on_interval (async_work_data_t *data) {
-	if (++interval_count > 10) {
-		printf("interval limit reached. Stopping.. \n");
-		data->rc = 1;
-	} else {
-		printf("interval #%d\n", interval_count);
-	}
+  if (++interval_count > 10) {
+    printf("interval limit reached. Stopping.. \n");
+    data->rc = 1;
+  } else {
+    printf("interval #%d\n", interval_count);
+  }
 }

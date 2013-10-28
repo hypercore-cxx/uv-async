@@ -9,7 +9,8 @@
 #define async(env, l)                                      \
   async_env_t *env = malloc(sizeof(async_env_t));          \
   env->loop = l;                                           \
-  env->handle = NULL;
+  env->handle = NULL;                                      \
+  env->stdio_count = 0;                                    \
 
 #define async_work_init(e, fn, d, f) {                     \
   async_work_data_t data;                                  \
@@ -40,6 +41,10 @@
   async_work_init(env, fn, ms, ASYNC_INTERVAL);            \
 }
 
+#define spawn(env, cmd, fn) {                              \
+  _spawn_async(env, sizeof(cmd) / sizeof(cmd[0]), cmd, fn);\
+}
+
 #define MAX_ASYNC_STDIO 8
 
 // FLAGS
@@ -53,6 +58,7 @@ typedef struct async_env {
   uv_async_t *handle;
   uv_loop_t *loop;
   uv_stdio_container_t stdio[MAX_ASYNC_STDIO];
+  int stdio_count;
   int flags;
 } async_env_t;
 
@@ -60,15 +66,12 @@ typedef struct async_work_data {
   async_env_t *env;
   void (*cb)(struct async_work_data *data);
   void *data;
-	int rc;
+  int rc;
   int flags;
   int err;
 } async_work_data_t;
 
 typedef void (async_cb)(async_work_data_t *work);
-
-void
-aspawn (async_env_t *env, char **args, async_cb *fn);
 
 static void
 _handle_async_callback (uv_async_t *handle, int rc);
@@ -86,22 +89,6 @@ static void
 _handle_spawn_async (uv_process_t *req, int64_t rc, int sig);
 
 
-void
-aspawn (async_env_t *env, char *args[], void (*fn)(async_work_data_t *work)) {
-  int argc = -1;
-  char *a = args[++argc];
-  while (1) {
-    a = args[argc +1];
-    if (a != NULL) {
-      argc++;
-    } else {
-      break;
-    }
-  }
-
-  _spawn_async(env, argc, args, fn);
-}
-
 static void
 _handle_async (uv_work_t *work) {
   async_work_data_t *data = (async_work_data_t *)work->data;
@@ -110,16 +97,16 @@ _handle_async (uv_work_t *work) {
 
   if (ASYNC_DEFER == (ASYNC_DEFER & data->flags)) {
     us = ((int) data->data) * 1000;
-  } 
-	
-	if (ASYNC_INTERVAL == (ASYNC_INTERVAL & data->flags)) {
+  }
+
+  if (ASYNC_INTERVAL == (ASYNC_INTERVAL & data->flags)) {
     us = ((int) data->data) * 1000;
-		while (1 != data->rc) {
-			usleep(us);
-			data->cb(data);
-		}
-		return;
-	}
+    while (1 != data->rc) {
+      usleep(us);
+      data->cb(data);
+    }
+    return;
+  }
 
   usleep(us);
   data->cb(data);
@@ -150,15 +137,15 @@ static void
 _spawn_async (async_env_t *env, int argc, char *args[], void (*fn)(async_work_data_t *work)) {
   int i = 0;
   int n = 0;
-  uv_process_options_t opts;
+  uv_process_options_t *opts = malloc(sizeof(uv_process_options_t));
   uv_process_t *process = malloc(sizeof(uv_process_t));
   async_work_data_t *data = malloc(sizeof(async_work_data_t));
 
   args[argc] = NULL;
-  opts.exit_cb = _handle_spawn_async;
-  opts.args = args;
-  opts.file = args[0];
-  opts.flags = 0;
+  opts->exit_cb = _handle_spawn_async;
+  opts->args = args;
+  opts->file = args[0];
+  opts->flags = 0;
 
   if (NULL != env->stdio) {
     opts.stdio = env->stdio;
@@ -168,14 +155,13 @@ _spawn_async (async_env_t *env, int argc, char *args[], void (*fn)(async_work_da
     }
 
     opts.stdio_count = n;
-    printf("%d\n", n);
   }
 
   data->env = env;
   data->cb = fn;
   process->data = (void *) data;
 
-  if (0 != uv_spawn(env->loop, process, &opts)) {
+  if (0 != uv_spawn(env->loop, process, opts)) {
     data->err = 1;
     fn(data);
     free(data);
@@ -194,7 +180,6 @@ _handle_spawn_async (uv_process_t *process, int64_t rc, int sig) {
 
   free(process);
   free(work);
-  printf("done\n");
 }
 
 #endif
