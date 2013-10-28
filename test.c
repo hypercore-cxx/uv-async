@@ -46,15 +46,6 @@ pass_test (async_work_data_t *data);
 int
 main (void) {
   loop = uv_default_loop();
-  uv_idle_t idler;
-  uv_prepare_t prep;
-
-  uv_idle_init(uv_default_loop(), &idler);
-  uv_idle_start(&idler, idle);
-
-  uv_prepare_init(uv_default_loop(), &prep);
-  uv_prepare_start(&prep, on_prep);
-
   assert(loop);
 
   async(env_a, loop) {
