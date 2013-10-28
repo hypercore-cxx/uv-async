@@ -189,7 +189,7 @@ _handle_spawn_async (uv_process_t *process, int64_t rc, int sig) {
     cb(work);
   }
 
-  free(process);
+	uv_close((uv_handle_t *) process, NULL);
   free(work);
 }
 
