@@ -16,13 +16,6 @@ static int loop_count = 0;
 static int env_count = 0;
 static int interval_count = 0;
 
-
-static void
-idle (uv_idle_t *handle, int rc);
-
-static void
-on_prep (uv_prepare_t *handle, int rc);
-
 static void
 detail_job (char *name, async_work_data_t *data);
 
@@ -127,7 +120,9 @@ main (void) {
     wait(env_d, ms, pass_test);
   }
 
-  return uv_run(loop, UV_RUN_DEFAULT);
+  uv_run(loop, UV_RUN_DEFAULT);
+
+	return 0;
 }
 
 static void
@@ -197,16 +192,6 @@ spawn_job (async_work_data_t *data) {
 }
 
 static void
-idle (uv_idle_t *handle, int rc) {
-
-}
-
-static void
-on_prep (uv_prepare_t *handle, int rc) {
-
-}
-
-static void
 pass_test (async_work_data_t *data) {
   int i = 0;
   return;
@@ -215,7 +200,6 @@ pass_test (async_work_data_t *data) {
   assert(1 == jobs[1]);
   assert(1 == jobs[2]);
   assert(1 == jobs[3]);
-//  uv_stop(loop);
 }
   
 static void
@@ -223,6 +207,7 @@ on_interval (async_work_data_t *data) {
   if (++interval_count > 10) {
     printf("interval limit reached. Stopping.. \n");
     data->rc = 1;
+		uv_stop((uv_loop_t *) data->env->loop);
   } else {
     printf("interval #%d\n", interval_count);
   }
