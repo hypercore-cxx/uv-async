@@ -111,8 +111,6 @@ main (void) {
 
     envs[env_count++] = env_c;
 
-    uv_stdio_container_t *stdio = env_c->stdio;
-
     char *cmd[] = { "mkdir", "-p", "./tmp/test/dir" };
     aspawn(env_c, cmd, spawn_job);
   }
@@ -143,6 +141,8 @@ detail_job (char *name, async_work_data_t *data) {
     printf(" in env (a)");
   } else if (ENV_B == (ENV_B & data->env->flags)) {
     printf(" in env (b)");
+  } else if (ENV_C == (ENV_C & data->env->flags)) {
+    printf(" in env (c)");
   }
 
   printf("\n");
@@ -199,5 +199,5 @@ pass_test (async_work_data_t *data) {
   assert(1 == jobs[1]);
   assert(1 == jobs[2]);
   assert(1 == jobs[3]);
-  uv_stop(loop);
+//  uv_stop(loop);
 }
