@@ -13,18 +13,19 @@
   env->stdio_count = 0;                                    \
 
 #define async_work_init(e, fn, d, f) {                     \
-  async_work_data_t data;                                  \
-  uv_work_t work;                                          \
-  data.env = e;                                            \
-  data.cb = fn;                                            \
-  data.data = (void *)d;                                   \
-  data.flags = 0;                                          \
-  data.flags |= f;                                         \
-  work.data = (void *) &data;                              \
+  async_work_data_t *data =                                \
+    malloc(sizeof(async_work_data_t));                     \
+  uv_work_t *work = malloc(sizeof(uv_work_t));             \
+  data->env = e;                                           \
+  data->cb = fn;                                           \
+  data->data = (void *)d;                                  \
+  data->flags = 0;                                         \
+  data->flags |= f;                                        \
+  work->data = (void *) data;                              \
   e->handle = (uv_async_t *) malloc(sizeof(uv_async_t));   \
   uv_async_init(e->loop, e->handle,                        \
       _handle_async_callback);                             \
-  uv_queue_work(e->loop, &work,                            \
+  uv_queue_work(e->loop, work,                             \
       _handle_async,                                       \
       _handle_after_async);                                \
 }
@@ -98,12 +99,12 @@ _handle_async (uv_work_t *work) {
   async_env_t *env = (async_env_t *)data->env;
   int us = 0;
 
-  if (ASYNC_DEFER == (ASYNC_DEFER & data->flags)) {
-    us = ((int) data->data) * 1000;
+  if (ASYNC_DEFER == (ASYNC_DEFER & data->flags) ||
+      ASYNC_INTERVAL == (ASYNC_INTERVAL & data->flags)) {
+    us = ((long) data->data) * 1000;
   }
 
   if (ASYNC_INTERVAL == (ASYNC_INTERVAL & data->flags)) {
-    us = ((int) data->data) * 1000;
     while (1 != data->rc) {
       usleep(us);
       data->cb(data);
@@ -134,6 +135,8 @@ _handle_async_callback (uv_async_t *handle, int rc) {
   if (0 == uv_is_closing((uv_handle_t *)handle)) {
     uv_close((uv_handle_t *)handle, NULL);
   }
+
+  free(work);
 }
 
 static void
