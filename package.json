@@ -1,0 +1,9 @@
+{
+  "name": "async.h",
+  "version": "0.0.1",
+  "repo": "jwerle/async.h",
+  "description": "Async goodies for libuv",
+  "keywords": ["async", "libuv", "util"],
+  "license": "MIT",
+  "src": ["async.h"]
+}
