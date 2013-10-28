@@ -59,6 +59,7 @@ typedef struct async_env {
   uv_async_t *handle;
   uv_loop_t *loop;
   uv_stdio_container_t stdio[MAX_ASYNC_STDIO];
+	void *data;
   int stdio_count;
   int flags;
 } async_env_t;
