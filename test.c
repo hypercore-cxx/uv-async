@@ -122,7 +122,7 @@ main (void) {
 
   uv_run(loop, UV_RUN_DEFAULT);
 
-	return 0;
+  return 0;
 }
 
 static void
@@ -166,29 +166,29 @@ job4 (async_work_data_t *data) {
 
 static void
 spawn_job (async_work_data_t *data) {
-	uv_process_options_t *opts = (uv_process_options_t *)data->extra;
+  uv_process_options_t *opts = (uv_process_options_t *)data->extra;
   struct stat s;
 
   detail_job("spawn", data);
-	printf("- (spawn) rc = '%d'\n", data->rc);
-	printf("- (spawn) signal = '%d'\n", data->signal);
+  printf("- (spawn) rc = '%d'\n", data->rc);
+  printf("- (spawn) signal = '%d'\n", data->signal);
 
-	assert(0 == data->rc);
-	assert(0 == data->signal);
-	assert(data->process);
+  assert(0 == data->rc);
+  assert(0 == data->signal);
+  assert(data->process);
 
-	if (0 == strcmp("mkdir", opts->file)) {
-	  assert(0 == stat("./tmp", &s));
-	  assert(0 == stat("./tmp/test", &s));
-	  assert(0 == stat("./tmp/test/dir", &s));
+  if (0 == strcmp("mkdir", opts->file)) {
+    assert(0 == stat("./tmp", &s));
+    assert(0 == stat("./tmp/test", &s));
+    assert(0 == stat("./tmp/test/dir", &s));
 
-		async(env, loop) {
-			char *cmd[] = { "rm", "-rf", "./tmp" };
-	    spawn(env, cmd, spawn_job);
-		}
-	} else if (0 == strcmp("rm", opts->file)) {
-	  assert(-1 == stat("./tmp", &s));
-	}
+    async(env, loop) {
+      char *cmd[] = { "rm", "-rf", "./tmp" };
+      spawn(env, cmd, spawn_job);
+    }
+  } else if (0 == strcmp("rm", opts->file)) {
+    assert(-1 == stat("./tmp", &s));
+  }
 }
 
 static void
@@ -201,13 +201,13 @@ pass_test (async_work_data_t *data) {
   assert(1 == jobs[2]);
   assert(1 == jobs[3]);
 }
-  
+
 static void
 on_interval (async_work_data_t *data) {
   if (++interval_count > 10) {
     printf("interval limit reached. Stopping.. \n");
     data->rc = 1;
-		uv_stop((uv_loop_t *) data->env->loop);
+    uv_stop((uv_loop_t *) data->env->loop);
   } else {
     printf("interval #%d\n", interval_count);
   }
