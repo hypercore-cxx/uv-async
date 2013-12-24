@@ -1,6 +1,5 @@
-
-#ifndef __ASYNC_H__
-#define __ASYNC_H__ 1
+#ifndef ASYNC_H
+#define ASYNC_H 1
 
 #include <stdlib.h>
 #include <unistd.h>
