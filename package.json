@@ -1,7 +1,7 @@
 {
-  "name": "async.h",
+  "name": "uv-async",
   "version": "0.0.1",
-  "repo": "jwerle/async.h",
+  "repo": "jwerle/uv-async",
   "description": "Async goodies for libuv",
   "keywords": ["async", "libuv", "util"],
   "license": "MIT",
