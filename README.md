@@ -6,7 +6,7 @@ Asynchronous goodies built on libuv
 # install
 
 ```sh
-$ clib install jwerle/async.h
+$ clib install jwerle/uv-async
 ```
 
 # usage
