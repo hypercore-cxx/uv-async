@@ -53,7 +53,7 @@ async(env, loop) {
 
 ## interval
 
-You can set an interval task with the `inteval(env, ms, fn)` macro
+You can set an interval task with the `interval(env, ms, fn)` macro
 function.
 
 ```c
